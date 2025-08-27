@@ -2,20 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { collection, onSnapshot, query, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '../../../lib/firebase/clientApp';
-// 새로 만든 ToonSlider 컴포넌트를 import 합니다.
 import ToonSlider from '../../../components/ToonSlider';
+import ToonViewerNav from '../../../components/ToonViewerNav';
 import styles from '../../page.module.css';
 
 export default function ToonViewerPage() {
   const params = useParams();
   const { toonId = '', episodeId = '' } = params || {};
 
-  const [comicTitle, setComicTitle] = useState('');
-  const [episodeTitle, setEpisodeTitle] = useState('');
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  const [prevEpisodeId, setPrevEpisodeId] = useState(null);
+  const [nextEpisodeId, setNextEpisodeId] = useState(null);
 
   useEffect(() => {
     if (!toonId || !episodeId) return;
@@ -24,27 +25,20 @@ export default function ToonViewerPage() {
 
     const fetchData = async () => {
       try {
-        const comicDocRef = doc(db, 'Comics', toonId);
-        const comicSnap = await getDoc(comicDocRef);
-        if (comicSnap.exists()) {
-          setComicTitle(comicSnap.data().title);
-        }
-
-        const episodeDocRef = doc(db, 'Comics', toonId, 'Episodes', decodedEpisodeId);
-        const episodeSnap = await getDoc(episodeDocRef);
-        if (episodeSnap.exists()) {
-          setEpisodeTitle(episodeSnap.data().episodeTitle);
-        }
+        const episodesQuery = query(collection(db, `Comics/${toonId}/Episodes`), orderBy('uploadDate', 'asc'));
+        const episodesSnapshot = await getDocs(episodesQuery);
+        const allEpisodes = episodesSnapshot.docs.map(doc => doc.id);
+        
+        const currentIndex = allEpisodes.findIndex(id => id === decodedEpisodeId);
+        
+        setPrevEpisodeId(currentIndex > 0 ? allEpisodes[currentIndex - 1] : null);
+        setNextEpisodeId(currentIndex < allEpisodes.length - 1 ? allEpisodes[currentIndex + 1] : null);
 
         const imagesCollectionRef = collection(db, 'Comics', toonId, 'Episodes', decodedEpisodeId, 'Images');
         const q = query(imagesCollectionRef, orderBy('order'));
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
-          const imagesData = [];
-          querySnapshot.forEach((doc) => {
-            imagesData.push({ id: doc.id, ...doc.data() });
-          });
-          setImages(imagesData);
+          setImages(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
           setLoading(false);
         });
 
@@ -64,13 +58,18 @@ export default function ToonViewerPage() {
 
   return (
     <main className={styles.main}>
-      {/* <h1 className={styles.title}>{`${comicTitle} - ${episodeTitle}`}</h1> */}
+      {/* 💡 불필요한 props 제거 */}
+      <ToonViewerNav
+        comicId={toonId}
+        prevEpisodeId={prevEpisodeId}
+        nextEpisodeId={nextEpisodeId}
+      />
       <div className={styles.viewer}>
-        {/* 기존의 map 함수 대신 ToonSlider 컴포넌트를 사용합니다. */}
         <ToonSlider 
           images={images} 
           comicId={toonId} 
-          episodeId={decodeURIComponent(episodeId)} 
+          episodeId={decodeURIComponent(episodeId)}
+          nextEpisodeId={nextEpisodeId}
         />
       </div>
     </main>

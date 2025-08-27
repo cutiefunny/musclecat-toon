@@ -3,16 +3,15 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-// getDoc과 doc을 import 합니다.
-import { collection, onSnapshot, query, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc, getDoc, getDocs, limit } from 'firebase/firestore'; // getDocs, limit 추가
 import { db } from '../../lib/firebase/clientApp';
+import Image from 'next/image'; // Image 컴포넌트 import
 import styles from '../page.module.css';
 
 export default function EpisodeListPage() {
   const params = useParams();
   const { toonId } = params;
   
-  // 만화 제목을 저장할 상태 추가
   const [comicTitle, setComicTitle] = useState(''); 
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +19,6 @@ export default function EpisodeListPage() {
   useEffect(() => {
     if (!toonId) return;
 
-    // 만화 제목을 가져오는 함수
     const fetchComicTitle = async () => {
       const comicDocRef = doc(db, 'Comics', toonId);
       const comicSnap = await getDoc(comicDocRef);
@@ -32,20 +30,35 @@ export default function EpisodeListPage() {
       }
     };
 
-    // 에피소드 목록을 가져오는 로직
+    fetchComicTitle();
+
     const episodesCollectionRef = collection(db, 'Comics', toonId, 'Episodes');
     const q = query(episodesCollectionRef, orderBy('uploadDate', 'desc'));
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const episodesData = [];
-      querySnapshot.forEach((doc) => {
-        episodesData.push({ id: doc.id, ...doc.data() });
-      });
-      setEpisodes(episodesData);
+    const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+      setLoading(true);
+      const episodesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        thumbnailUrl: null // 썸네일 필드 초기화
+      }));
+
+      // 각 에피소드의 첫 번째 이미지 URL을 가져옵니다.
+      const episodesWithThumbnails = await Promise.all(
+        episodesData.map(async (episode) => {
+          const imagesRef = collection(db, 'Comics', toonId, 'Episodes', episode.id, 'Images');
+          const firstImageQuery = query(imagesRef, orderBy('order'), limit(1));
+          const snapshot = await getDocs(firstImageQuery);
+          if (!snapshot.empty) {
+            episode.thumbnailUrl = snapshot.docs[0].data().imageUrl;
+          }
+          return episode;
+        })
+      );
+
+      setEpisodes(episodesWithThumbnails);
       setLoading(false);
     });
-
-    fetchComicTitle(); // 함수 호출
 
     return () => unsubscribe();
   }, [toonId]);
@@ -56,12 +69,25 @@ export default function EpisodeListPage() {
 
   return (
     <main className={styles.main}>
-      {/* toonId 대신 comicTitle 상태를 사용합니다. */}
       <h1 className={styles.title}>{comicTitle}</h1>
       <div className={styles.list}>
         {episodes.map((episode) => (
           <Link href={`/${toonId}/${episode.id}`} key={episode.id} className={styles.listItem}>
-            {episode.episodeTitle}
+            {/* 💡 썸네일 이미지 추가 */}
+            <div className={styles.episodeInfo}>
+              <span>{episode.episodeTitle}</span>
+              {/* uploadDate를 표시하고 싶다면 아래 주석 해제 */}
+              {/* <small>{new Date(episode.uploadDate.toDate()).toLocaleDateString()}</small> */}
+            </div>
+            {episode.thumbnailUrl && (
+              <Image 
+                src={episode.thumbnailUrl} 
+                alt={`${episode.episodeTitle} 썸네일`} 
+                width={80} 
+                height={50} 
+                className={styles.episodeThumbnail}
+              />
+            )}
           </Link>
         ))}
       </div>
