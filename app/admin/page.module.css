@@ -1,0 +1,105 @@
+/* app/admin/page.module.css */
+.main {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 2rem;
+  font-family: sans-serif;
+  color: #333;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  font-size: 2.5rem;
+  color: #1a1a1a;
+}
+
+.section {
+  background-color: #f9f9f9;
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.section h2 {
+  margin-top: 0;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.navLinks {
+  display: flex;
+  gap: 1rem;
+}
+
+.navLink {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background-color: #0070f3;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.navLink:hover {
+  background-color: #005bb5;
+}
+
+.list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  margin-bottom: 0.75rem;
+}
+
+.listItem span {
+  font-weight: 500;
+}
+
+.listItem button {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.listItem button:hover {
+  background-color: #c82333;
+}
+
+.listItem button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.commentContent {
+  flex-grow: 1;
+}
+
+.commentContent p {
+  margin: 0 0 0.25rem 0;
+  font-style: italic;
+  color: #555;
+}
+
+.commentContent small {
+  font-size: 0.8rem;
+  color: #888;
+}

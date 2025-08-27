@@ -1,5 +1,5 @@
 .main {
-  padding: 2rem;
+  /* padding: 2rem; */
 }
 
 .title {
@@ -59,6 +59,7 @@
 .viewer {
   max-width: 800px;
   margin: 0 auto;
+  margin-top: 130px;
 }
 
 .imageContainer {
@@ -66,4 +67,33 @@
   border: 1px solid #eee;
   padding: 1rem;
   border-radius: 8px;
+}
+
+/* ToonSlider 컨테이너가 부모의 너비를 꽉 채우도록 */
+.toon-slider-container {
+  width: 100%;
+  max-width: 1200px; /* 최대 너비를 설정하여 너무 커지지 않게 할 수도 있습니다 */
+  margin: 0 auto;
+}
+
+/* 이미지가 꽉 차도록 부모 컨테이너의 높이를 확보 */
+.imageWrapper {
+  position: relative; /* Image fill 속성 사용을 위해 필수 */
+  width: 100%;
+  height: 60vh;
+  max-height: 800px; /* 최대 높이 설정 (선택 사항) */
+  cursor: pointer; /* 클릭 가능하다는 시각적 피드백 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff; /* 이미지가 로딩되기 전 배경색 */
+}
+
+/* CommentSection이 나타날 때의 스타일 (선택 사항) */
+.commentSectionVisible {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-top: 1px solid #eee;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
 }

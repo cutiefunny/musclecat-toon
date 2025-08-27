@@ -1,0 +1,13 @@
+/* react-slick 커스텀 스타일 */
+.slick-prev:before, .slick-next:before {
+  color: black; /* 화살표 색상 */
+}
+
+.slick-dots li button:before {
+  color: grey; /* 점 색상 */
+  font-size: 10px;
+}
+
+.slick-dots li.slick-active button:before {
+  color: black; /* 활성화된 점 색상 */
+}
