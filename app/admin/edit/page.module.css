@@ -92,8 +92,9 @@
 }
 
 .saveButton {
+  flex-grow: 2; /* 추가 버튼보다 2배 넓게 */
   display: block;
-  width: 100%;
+  /* width: 100%; <- 제거 */
   padding: 1rem;
   border: none;
   background-color: #28a745;
@@ -112,4 +113,27 @@
 .saveButton:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.addButton {
+  flex-grow: 1; /* 남는 공간을 차지하도록 */
+  padding: 1rem;
+  border: 1px solid #0070f3;
+  background-color: #f0f7ff;
+  color: #0070f3;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.addButton:hover {
+  background-color: #e6f2ff;
 }

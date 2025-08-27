@@ -3,12 +3,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { db, storage } from '../../../lib/firebase/clientApp';
-import { collection, getDocs, doc, writeBatch, query, orderBy, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, writeBatch, query, orderBy, addDoc } from 'firebase/firestore';
 import { ref, deleteObject, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
 import styles from './page.module.css';
 
-// @dnd-kit 라이브러리에서 필요한 모듈을 import 합니다.
 import {
   DndContext,
   closestCenter,
@@ -26,7 +25,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-// Draggable 아이템을 위한 별도의 컴포넌트를 생성합니다.
 function SortableItem({ id, image, index, onDelete, onFileSelect }) {
   const {
     attributes,
@@ -40,8 +38,7 @@ function SortableItem({ id, image, index, onDelete, onFileSelect }) {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
-  // 숨겨진 파일 입력을 위한 ref
+  
   const fileInputRef = useRef(null);
 
   const handleEditClick = () => {
@@ -54,7 +51,6 @@ function SortableItem({ id, image, index, onDelete, onFileSelect }) {
     }
   };
 
-  // 미리보기를 위한 URL 생성
   const imagePreviewUrl = image.newFile ? URL.createObjectURL(image.newFile) : image.imageUrl;
 
   return (
@@ -71,14 +67,14 @@ function SortableItem({ id, image, index, onDelete, onFileSelect }) {
       />
       <button 
         onClick={handleEditClick}
-        onPointerDown={(e) => e.stopPropagation()} // 이벤트 전파 방지
+        onPointerDown={(e) => e.stopPropagation()}
         className={styles.editButton}
       >
         수정
       </button>
       <button 
         onClick={() => onDelete(id)}
-        onPointerDown={(e) => e.stopPropagation()} // 이벤트 전파 방지
+        onPointerDown={(e) => e.stopPropagation()}
         className={styles.deleteButton}
       >
         삭제
@@ -92,7 +88,7 @@ export default function AdminEditPage() {
   const [comics, setComics] = useState([]);
   const [episodes, setEpisodes] = useState([]);
   const [images, setImages] = useState([]);
-  const [originalImages, setOriginalImages] = useState([]); // 원본 이미지 목록 저장
+  const [originalImages, setOriginalImages] = useState([]);
   
   const [selectedComicId, setSelectedComicId] = useState('');
   const [selectedEpisodeId, setSelectedEpisodeId] = useState('');
@@ -102,6 +98,8 @@ export default function AdminEditPage() {
   const [loadingImages, setLoadingImages] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
+  const addFileInputRef = useRef(null); // 이미지 추가를 위한 ref
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -109,7 +107,6 @@ export default function AdminEditPage() {
     })
   );
 
-  // 만화 목록 불러오기
   useEffect(() => {
     const fetchComics = async () => {
       const comicsSnapshot = await getDocs(collection(db, 'Comics'));
@@ -119,44 +116,36 @@ export default function AdminEditPage() {
     fetchComics();
   }, []);
 
-  // 만화 선택 시 에피소드 목록 불러오기
   useEffect(() => {
     if (!selectedComicId) {
-      setEpisodes([]);
-      setImages([]);
-      setSelectedEpisodeId('');
-      return;
+      setEpisodes([]); setImages([]); setSelectedEpisodeId(''); return;
     }
     const fetchEpisodes = async () => {
       setLoadingEpisodes(true);
-      const episodesQuery = query(collection(db, `Comics/${selectedComicId}/Episodes`), orderBy('uploadDate', 'desc'));
-      const episodesSnapshot = await getDocs(episodesQuery);
-      setEpisodes(episodesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const q = query(collection(db, `Comics/${selectedComicId}/Episodes`), orderBy('uploadDate', 'desc'));
+      const snapshot = await getDocs(q);
+      setEpisodes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       setLoadingEpisodes(false);
     };
     fetchEpisodes();
   }, [selectedComicId]);
 
-  // 에피소드 선택 시 이미지 목록 불러오기
   useEffect(() => {
     if (!selectedComicId || !selectedEpisodeId) {
-      setImages([]);
-      setOriginalImages([]);
-      return;
+      setImages([]); setOriginalImages([]); return;
     }
     const fetchImages = async () => {
       setLoadingImages(true);
-      const imagesQuery = query(collection(db, `Comics/${selectedComicId}/Episodes/${selectedEpisodeId}/Images`), orderBy('order'));
-      const imagesSnapshot = await getDocs(imagesQuery);
-      const fetchedImages = imagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const q = query(collection(db, `Comics/${selectedComicId}/Episodes/${selectedEpisodeId}/Images`), orderBy('order'));
+      const snapshot = await getDocs(q);
+      const fetchedImages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setImages(fetchedImages);
-      setOriginalImages(fetchedImages); // 원본 상태 저장
+      setOriginalImages(fetchedImages);
       setLoadingImages(false);
     };
     fetchImages();
   }, [selectedComicId, selectedEpisodeId]);
 
-  // 드래그 종료 핸들러
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -168,23 +157,29 @@ export default function AdminEditPage() {
     }
   };
   
-  // 이미지 파일 교체 핸들러
   const handleFileSelect = (imageId, file) => {
-    setImages(currentImages =>
-      currentImages.map(image =>
-        image.id === imageId ? { ...image, newFile: file } : image
-      )
-    );
+    setImages(current => current.map(img => img.id === imageId ? { ...img, newFile: file } : img));
+  };
+  
+  // 💡 새로운 이미지 추가 핸들러
+  const handleAddImages = (e) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files).map(file => ({
+        id: `new-${file.name}-${Date.now()}`, // 임시 고유 ID
+        isNew: true, // 새 파일임을 표시
+        newFile: file,
+        imageUrl: URL.createObjectURL(file) // 미리보기용 URL
+      }));
+      setImages(current => [...current, ...newFiles]);
+    }
   };
 
-  // 이미지 삭제 핸들러
   const handleDeleteImage = (imageIdToDelete) => {
-    if (confirm('정말로 이 이미지를 삭제하시겠습니까? "변경사항 저장"을 눌러야 최종 반영됩니다.')) {
+    if (confirm('이 이미지를 삭제하시겠습니까? "변경사항 저장"을 눌러야 최종 반영됩니다.')) {
       setImages(images.filter(image => image.id !== imageIdToDelete));
     }
   };
 
-  // 변경사항 저장 핸들러
   const handleSaveChanges = async () => {
     if (!selectedComicId || !selectedEpisodeId) return;
     setIsSaving(true);
@@ -193,7 +188,6 @@ export default function AdminEditPage() {
       const batch = writeBatch(db);
       const imagesCollectionRef = collection(db, `Comics/${selectedComicId}/Episodes/${selectedEpisodeId}/Images`);
       
-      // 삭제된 이미지 처리
       const currentImageIds = new Set(images.map(img => img.id));
       const deletedImages = originalImages.filter(img => !currentImageIds.has(img.id));
       for (const imageToDelete of deletedImages) {
@@ -202,30 +196,39 @@ export default function AdminEditPage() {
         batch.delete(doc(imagesCollectionRef, imageToDelete.id));
       }
 
-      // 순서 변경 및 이미지 교체 처리
       for (const [index, image] of images.entries()) {
-        const imageRef = doc(imagesCollectionRef, image.id);
-        if (image.newFile) { // 파일이 교체된 경우
-          const originalImage = originalImages.find(img => img.id === image.id);
-          if (originalImage) {
-             // 기존 스토리지 파일 삭제
-            const oldStorageRef = ref(storage, originalImage.imageUrl);
-            await deleteObject(oldStorageRef);
-          }
-          // 새 파일 업로드
+        if (image.isNew) { // 새로 추가된 이미지
           const newStorageRef = ref(storage, `comics/${selectedComicId}/${selectedEpisodeId}/${Date.now()}_${image.newFile.name}`);
           await uploadBytes(newStorageRef, image.newFile);
           const newImageUrl = await getDownloadURL(newStorageRef);
-          // Firestore 문서 업데이트 (순서와 URL)
+          
+          // batch.set()은 ID가 없는 새 문서에 사용할 수 없으므로 addDoc을 별도로 호출해야 함
+          // 여기서는 batch를 사용하지 않고 바로 추가 후, 순서 업데이트는 나중에 일괄 처리
+          const newDocRef = doc(collection(db, 'tmp')); // 임시 ID 생성용
+          batch.set(doc(imagesCollectionRef, newDocRef.id), {
+            imageUrl: newImageUrl,
+            order: index
+          });
+        } else if (image.newFile) { // 기존 이미지 파일 교체
+          const imageRef = doc(imagesCollectionRef, image.id);
+          const originalImage = originalImages.find(img => img.id === image.id);
+          if (originalImage) {
+            const oldStorageRef = ref(storage, originalImage.imageUrl);
+            await deleteObject(oldStorageRef);
+          }
+          const newStorageRef = ref(storage, `comics/${selectedComicId}/${selectedEpisodeId}/${Date.now()}_${image.newFile.name}`);
+          await uploadBytes(newStorageRef, image.newFile);
+          const newImageUrl = await getDownloadURL(newStorageRef);
           batch.update(imageRef, { order: index, imageUrl: newImageUrl });
-        } else {
-          // 순서만 업데이트
+        } else { // 순서만 변경된 기존 이미지
+          const imageRef = doc(imagesCollectionRef, image.id);
           batch.update(imageRef, { order: index });
         }
       }
 
       await batch.commit();
       alert('변경사항이 성공적으로 저장되었습니다.');
+      
       // 데이터 새로고침
       const imagesQuery = query(collection(db, `Comics/${selectedComicId}/Episodes/${selectedEpisodeId}/Images`), orderBy('order'));
       const imagesSnapshot = await getDocs(imagesQuery);
@@ -256,7 +259,7 @@ export default function AdminEditPage() {
         </select>
       </div>
 
-      {loadingImages && <p>이미지를 불러오는 중...</p>}
+      {loadingImages && <p>로딩 중...</p>}
       
       {images.length > 0 && (
         <>
@@ -269,9 +272,24 @@ export default function AdminEditPage() {
               </div>
             </SortableContext>
           </DndContext>
-          <button onClick={handleSaveChanges} disabled={isSaving} className={styles.saveButton}>
-            {isSaving ? '저장 중...' : '변경사항 저장'}
-          </button>
+          
+          {/* 💡 이미지 추가 버튼 및 숨겨진 input */}
+          <div className={styles.buttonGroup}>
+              <input
+                type="file"
+                multiple
+                ref={addFileInputRef}
+                onChange={handleAddImages}
+                style={{ display: 'none' }}
+                accept="image/*"
+              />
+              <button onClick={() => addFileInputRef.current.click()} className={styles.addButton}>
+                이미지 추가
+              </button>
+              <button onClick={handleSaveChanges} disabled={isSaving} className={styles.saveButton}>
+                {isSaving ? '저장 중...' : '변경사항 저장'}
+              </button>
+          </div>
         </>
       )}
     </main>
