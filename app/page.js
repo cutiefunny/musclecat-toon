@@ -31,7 +31,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <h1 className={styles.title}>근육고양이 만화책</h1>
+      <h1 className={styles.title}>근육고양이<img src="/images/icon.png" alt="근육고양이 아이콘" width={'40px'} style={{ marginBottom: '-8px' }} />만화책</h1>
       <div className={styles.grid}>
         {comics.map((comic) => {
           // 💡 thumbnailUrl이 유효한 URL 형식인지 확인하는 로직입니다.
