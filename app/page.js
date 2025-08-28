@@ -43,7 +43,7 @@ export default function Home() {
             <Link href={`/${comic.id}`} key={comic.id} className={styles.card}>
               <Image src={imageUrl} alt={comic.title} width={200} height={200} />
               <h2>{comic.title}</h2>
-              <p>{comic.author}</p>
+              {/* <p>{comic.author}</p> */}
             </Link>
           );
         })}
