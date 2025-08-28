@@ -272,3 +272,50 @@
 .homeButton:hover {
   background-color: #f0f0f0;
 }
+
+/* 💡 슬라이더 컨테이너에 relative 포지션을 추가하여 화살표 위치의 기준점으로 삼습니다. */
+.toonSliderContainer {
+  position: relative;
+}
+
+/* 💡 기본적으로 화살표를 숨깁니다 (모바일). */
+.slickArrow {
+  display: none !important;
+}
+
+/* 💡 화면 너비가 768px 이상일 때 (PC) 화살표를 표시하고 스타일을 적용합니다. */
+@media (min-width: 768px) {
+  .slickArrow {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .slickArrow:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+
+  .slickArrow svg {
+    color: white;
+    font-size: 20px;
+  }
+
+  .slickPrev {
+    left: -50px; /* 슬라이더 왼쪽에 위치 */
+  }
+
+  .slickNext {
+    right: -50px; /* 슬라이더 오른쪽에 위치 */
+  }
+}
