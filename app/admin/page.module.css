@@ -50,34 +50,35 @@
   background-color: #005bb5;
 }
 
-.list {
+.list,
+.episodeList {
   list-style-type: none;
   padding: 0;
+  margin-bottom: 1rem;
 }
 
 .listItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 0.75rem;
   background-color: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 5px;
   margin-bottom: 0.75rem;
 }
 
-.listItem span {
+.comicTitle {
+  flex-grow: 1;
   font-weight: 500;
 }
 
-/* 💡 버튼 그룹 스타일 */
 .buttonGroup {
   display: flex;
   gap: 0.5rem;
 }
 
-/* 💡 공통 버튼 스타일 */
-.listItem button {
+.buttonGroup button {
   padding: 0.4rem 0.8rem;
   border: none;
   color: white;
@@ -86,7 +87,6 @@
   transition: background-color 0.2s;
 }
 
-/* 💡 수정 버튼 스타일 */
 .editButton {
   background-color: #17a2b8;
 }
@@ -94,76 +94,74 @@
   background-color: #138496;
 }
 
-/* 💡 삭제 버튼 스타일 */
 .deleteButton {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
   background-color: #dc3545;
 }
 .deleteButton:hover {
   background-color: #c82333;
 }
 
-.listItem button:disabled {
+.buttonGroup button:disabled,
+.saveOrderButton:disabled,
+.deleteButton:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
+
 .commentContent {
   flex-grow: 1;
 }
-
 .commentContent p {
   margin: 0 0 0.25rem 0;
   font-style: italic;
   color: #555;
 }
-
 .commentContent small {
   font-size: 0.8rem;
   color: #888;
 }
 
-/* 💡 모달 폼 스타일 */
 .modalForm {
   padding: 1rem;
 }
-
 .modalForm h3 {
   margin-top: 0;
   margin-bottom: 1.5rem;
   text-align: center;
 }
-
 .formGroup {
   margin-bottom: 1rem;
 }
-
 .formGroup label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
 }
-
 .modalInput {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
 .thumbnailPreview {
   margin-top: 1rem;
   border-radius: 4px;
   border: 1px solid #ddd;
   object-fit: cover;
 }
-
 .modalActions {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 2rem;
 }
-
 .modalActions button {
   padding: 0.6rem 1.2rem;
   border-radius: 4px;
@@ -171,7 +169,6 @@
   cursor: pointer;
   font-weight: 500;
 }
-
 .cancelButton {
   background-color: #6c757d;
   color: white;
@@ -179,7 +176,6 @@
 .cancelButton:hover {
   background-color: #5a6268;
 }
-
 .saveButton {
   background-color: #28a745;
   color: white;
@@ -190,4 +186,48 @@
 .saveButton:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+.comicSelector {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.episodeItem {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+}
+
+.dragHandle {
+  cursor: grab;
+  margin-right: 1rem;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+}
+
+.episodeTitle {
+  flex-grow: 1;
+}
+
+.saveOrderButton {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.saveOrderButton:hover {
+  background-color: #0069d9;
 }
