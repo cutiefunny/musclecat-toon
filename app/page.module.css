@@ -319,3 +319,36 @@
     right: -50px; /* 슬라이더 오른쪽에 위치 */
   }
 }
+
+/* 💡 홈 화면 하단 앱 설치 버튼 스타일 추가 */
+.homeInstallButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+  
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  padding: 0.75rem 1.25rem;
+  border-radius: 2rem;
+  border: none;
+  background-color: #0070f3;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.homeInstallButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.homeInstallButton svg {
+  font-size: 1.1rem;
+}

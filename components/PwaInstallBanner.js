@@ -61,7 +61,7 @@ export default function PwaInstallBanner() {
   return (
     <div className={styles.banner}>
       <div className={styles.bannerContent}>
-        <p>앱을 설치하세요! 근육고양이잡화점의 이름을 걸고 이 앱은 무해합니다!</p>
+        <p>앱으로 보면 더 깔끔하다!</p>
         <div className={styles.buttonGroup}>
           <button onClick={handleInstallClick} className={styles.installButton}>
             앱 설치
