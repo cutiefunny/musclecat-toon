@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { collection, onSnapshot, query, orderBy, doc, getDoc, getDocs, limit } from 'firebase/firestore'; // getDocs, limit 추가
+import { useParams, useRouter } from 'next/navigation';
+import { collection, onSnapshot, query, orderBy, doc, getDoc, getDocs, limit } from 'firebase/firestore';
 import { db } from '../../lib/firebase/clientApp';
-import Image from 'next/image'; // Image 컴포넌트 import
+import Image from 'next/image';
 import styles from '../page.module.css';
+import { FaArrowLeft } from 'react-icons/fa'; // 💡 react-icons에서 FaHome 아이콘을 import 합니다.
 
 export default function EpisodeListPage() {
   const params = useParams();
@@ -15,6 +16,12 @@ export default function EpisodeListPage() {
   const [comicTitle, setComicTitle] = useState(''); 
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const router = useRouter();
+
+  const handlePrev = () => {
+    router.push(`/`);
+  };
 
   useEffect(() => {
     if (!toonId) return;
@@ -40,10 +47,9 @@ export default function EpisodeListPage() {
       const episodesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-        thumbnailUrl: null // 썸네일 필드 초기화
+        thumbnailUrl: null
       }));
 
-      // 각 에피소드의 첫 번째 이미지 URL을 가져옵니다.
       const episodesWithThumbnails = await Promise.all(
         episodesData.map(async (episode) => {
           const imagesRef = collection(db, 'Comics', toonId, 'Episodes', episode.id, 'Images');
@@ -69,15 +75,18 @@ export default function EpisodeListPage() {
 
   return (
     <main className={styles.main}>
-      <h1 className={styles.title}>{comicTitle}</h1>
+      {/* 💡 제목과 홈 버튼을 감싸는 헤더 컨테이너를 추가합니다. */}
+      <div className={styles.episodeHeader}>
+        <button onClick={handlePrev} className={styles.homeButton}>
+          <FaArrowLeft />
+        </button>
+        <h1 className={styles.title}>{comicTitle}</h1>
+      </div>
       <div className={styles.list}>
         {episodes.map((episode) => (
           <Link href={`/${toonId}/${episode.id}`} key={episode.id} className={styles.listItem}>
-            {/* 💡 썸네일 이미지 추가 */}
             <div className={styles.episodeInfo}>
               <span>{episode.episodeTitle}</span>
-              {/* uploadDate를 표시하고 싶다면 아래 주석 해제 */}
-              {/* <small>{new Date(episode.uploadDate.toDate()).toLocaleDateString()}</small> */}
             </div>
             {episode.thumbnailUrl && (
               <Image 

@@ -245,3 +245,35 @@
 .listButton {
   font-size: 1.2rem; /* 목록 아이콘은 이전/다음보다 약간 작게 */
 }
+
+/* 💡 에피소드 목록 페이지 헤더 스타일 */
+.episodeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto 2rem auto;
+}
+
+.episodeHeader .title {
+  margin: 0;
+}
+
+.homeButton {
+  position: absolute;
+  left: 0;
+  font-size: 1.5rem;
+  color: #000000;
+  text-decoration: none;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+}
+
+.homeButton:hover {
+  background-color: #f0f0f0;
+}
