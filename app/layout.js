@@ -1,4 +1,5 @@
 import "./globals.css";
+import PwaInstallBanner from "../components/PwaInstallBanner"; // 💡 PwaInstallBanner 컴포넌트를 import 합니다.
 
 export const metadata = {
   applicationName: "근육고양이만화책",
@@ -42,6 +43,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         {children}
+        <PwaInstallBanner /> {/* 💡 PwaInstallBanner 컴포넌트를 렌더링합니다. */}
       </body>
     </html>
   );
