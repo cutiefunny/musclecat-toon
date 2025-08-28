@@ -71,7 +71,9 @@
 
 .episodeInfo {
   display: flex;
-  flex-direction: column;
+  /* 💡 아이콘과 텍스트 정렬을 위해 추가 */
+  align-items: center; 
+  gap: 0.5rem;
   margin-left: 1rem;
 }
 
@@ -351,4 +353,18 @@
 
 .homeInstallButton svg {
   font-size: 1.1rem;
+}
+
+/* 💡 '처음부터 보기' 버튼 스타일 추가 */
+.firstEpisodeButton {
+  background-color: #f5f5f5;
+  border-color: #ddd;
+  font-weight: bold;
+  color: #535353;
+}
+
+.firstEpisodeButton .episodeInfo {
+  justify-content: center;
+  width: 100%;
+  margin-left: 0;
 }

@@ -7,7 +7,7 @@ import { collection, onSnapshot, query, orderBy, doc, getDoc, getDocs, limit } f
 import { db } from '../../lib/firebase/clientApp';
 import Image from 'next/image';
 import styles from '../page.module.css';
-import { FaArrowLeft } from 'react-icons/fa'; // 💡 react-icons에서 FaHome 아이콘을 import 합니다.
+import { FaArrowLeft, FaPlayCircle } from 'react-icons/fa'; // 💡 FaPlayCircle 아이콘 추가
 
 export default function EpisodeListPage() {
   const params = useParams();
@@ -40,7 +40,8 @@ export default function EpisodeListPage() {
     fetchComicTitle();
 
     const episodesCollectionRef = collection(db, 'Comics', toonId, 'Episodes');
-    const q = query(episodesCollectionRef, orderBy('uploadDate', 'desc'));
+    // 💡 첫 화를 찾기 위해 오름차순으로 정렬합니다.
+    const q = query(episodesCollectionRef, orderBy('uploadDate', 'asc'));
 
     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
       setLoading(true);
@@ -61,13 +62,17 @@ export default function EpisodeListPage() {
           return episode;
         })
       );
-
-      setEpisodes(episodesWithThumbnails);
+      
+      // 💡 화면에는 최신순으로 보여주기 위해 배열을 뒤집습니다.
+      setEpisodes(episodesWithThumbnails.reverse());
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, [toonId]);
+  
+  // 💡 첫 에피소드의 ID를 찾습니다. episodes 배열은 현재 내림차순이므로 마지막 요소가 첫 에피소드입니다.
+  const firstEpisodeId = episodes.length > 0 ? episodes[episodes.length - 1].id : null;
 
   if (loading) {
     return <main className={styles.main}><p>로딩 중...</p></main>;
@@ -75,7 +80,6 @@ export default function EpisodeListPage() {
 
   return (
     <main className={styles.main}>
-      {/* 💡 제목과 홈 버튼을 감싸는 헤더 컨테이너를 추가합니다. */}
       <div className={styles.episodeHeader}>
         <button onClick={handlePrev} className={styles.homeButton}>
           <FaArrowLeft />
@@ -83,6 +87,16 @@ export default function EpisodeListPage() {
         <h1 className={styles.title}>{comicTitle}</h1>
       </div>
       <div className={styles.list}>
+        {/* 💡 '처음부터 보기' 버튼 추가 */}
+        {firstEpisodeId && (
+          <Link href={`/${toonId}/${firstEpisodeId}`} className={`${styles.listItem} ${styles.firstEpisodeButton}`}>
+            <div className={styles.episodeInfo}>
+              <FaPlayCircle />
+              <span>처음부터 보기</span>
+            </div>
+          </Link>
+        )}
+        
         {episodes.map((episode) => (
           <Link href={`/${toonId}/${episode.id}`} key={episode.id} className={styles.listItem}>
             <div className={styles.episodeInfo}>
