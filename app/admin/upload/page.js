@@ -8,6 +8,9 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
 import styles from './page.module.css';
 
+// 💡 browser-image-compression 라이브러리 import
+import imageCompression from 'browser-image-compression';
+
 // @dnd-kit 라이브러리 import
 import {
   DndContext,
@@ -119,9 +122,15 @@ export default function AdminUploadPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // ... (handleSubmit 로직은 기존과 거의 동일하게 유지, imageFiles 배열 구조 변경만 반영) ...
     setUploading(true);
     setProgress(0);
+
+    // 💡 이미지 압축 옵션 설정
+    const options = {
+      maxSizeMB: 1,          // 최대 파일 크기 (1MB)
+      maxWidthOrHeight: 800, // 최대 너비 또는 높이
+      useWebWorker: true,    // 웹 워커 사용으로 UI 블로킹 방지
+    };
 
     let comicId = selectedComicId;
     let comicData = comics.find(c => c.id === comicId);
@@ -135,8 +144,10 @@ export default function AdminUploadPage() {
           setUploading(false);
           return;
         }
-        const thumbnailRef = ref(storage, `comics/${newComicTitle}/thumbnail/${thumbnailFile.name}`);
-        await uploadBytes(thumbnailRef, thumbnailFile);
+        // 💡 썸네일도 압축
+        const compressedThumbnail = await imageCompression(thumbnailFile, options);
+        const thumbnailRef = ref(storage, `comics/${newComicTitle}/thumbnail/${compressedThumbnail.name}`);
+        await uploadBytes(thumbnailRef, compressedThumbnail);
         const thumbnailUrl = await getDownloadURL(thumbnailRef);
 
         const newComicRef = await addDoc(collection(db, 'Comics'), {
@@ -171,8 +182,12 @@ export default function AdminUploadPage() {
 
       for (let i = 0; i < imageFiles.length; i++) {
         const { file } = imageFiles[i];
-        const imageRef = ref(storage, `comics/${comicId}/${episodeTitle}/${Date.now()}_${file.name}`);
-        await uploadBytes(imageRef, file);
+        
+        // 💡 업로드 전에 각 이미지 파일을 압축합니다.
+        const compressedFile = await imageCompression(file, options);
+
+        const imageRef = ref(storage, `comics/${comicId}/${episodeTitle}/${Date.now()}_${compressedFile.name}`);
+        await uploadBytes(imageRef, compressedFile); // 압축된 파일 업로드
         const imageUrl = await getDownloadURL(imageRef);
 
         const imageDocRef = collection(episodeRef, 'Images');
