@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'; // query와 orderBy를 import 합니다.
 import { db } from '../lib/firebase/clientApp';
 import styles from './page.module.css';
 import { FaDownload } from 'react-icons/fa'; // 💡 아이콘 import
@@ -19,7 +19,10 @@ export default function Home() {
 
   useEffect(() => {
     const comicsCollectionRef = collection(db, 'Comics');
-    const unsubscribe = onSnapshot(comicsCollectionRef, (querySnapshot) => {
+    // 💡 order 필드를 기준으로 오름차순으로 정렬하는 쿼리를 추가합니다.
+    const q = query(comicsCollectionRef, orderBy("order", "asc"));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const comicsData = [];
       querySnapshot.forEach((doc) => {
         comicsData.push({ id: doc.id, ...doc.data() });
