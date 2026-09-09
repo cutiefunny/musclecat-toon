@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'; // query와 orderBy를 import 합니다.
+import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase/clientApp';
 import styles from './page.module.css';
 import { FaDownload } from 'react-icons/fa'; // 💡 아이콘 import
@@ -19,17 +19,26 @@ export default function Home() {
 
   useEffect(() => {
     const comicsCollectionRef = collection(db, 'Comics');
-    // 💡 order 필드를 기준으로 오름차순으로 정렬하는 쿼리를 추가합니다.
-    const q = query(comicsCollectionRef, orderBy("order", "asc"));
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const comicsData = [];
-      querySnapshot.forEach((doc) => {
-        comicsData.push({ id: doc.id, ...doc.data() });
-      });
-      setComics(comicsData);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      comicsCollectionRef,
+      (querySnapshot) => {
+        const comicsData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          // order 필드가 없는 경우 맨 뒤로 정렬되도록 처리
+          order: doc.data().order ?? Infinity,
+        }));
+        // 클라이언트에서 order 기준으로 오름차순 정렬
+        comicsData.sort((a, b) => a.order - b.order);
+        setComics(comicsData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('만화 목록을 불러오는 중 오류 발생:', error);
+        setLoading(false);
+      }
+    );
 
     const handleBeforeInstallPrompt = (event) => {
       event.preventDefault();

@@ -86,13 +86,14 @@ export default function AdminUploadPage() {
     })
   );
 
+  const fetchComics = async () => {
+    const comicsCollectionRef = collection(db, 'Comics');
+    const querySnapshot = await getDocs(comicsCollectionRef);
+    const comicsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setComics(comicsList);
+  };
+
   useEffect(() => {
-    const fetchComics = async () => {
-      const comicsCollectionRef = collection(db, 'Comics');
-      const querySnapshot = await getDocs(comicsCollectionRef);
-      const comicsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setComics(comicsList);
-    };
     fetchComics();
   }, []);
 
@@ -150,10 +151,18 @@ export default function AdminUploadPage() {
         await uploadBytes(thumbnailRef, compressedThumbnail);
         const thumbnailUrl = await getDownloadURL(thumbnailRef);
 
+        const maxOrder = comics.reduce(
+          (max, c) => (typeof c.order === 'number' ? Math.max(max, c.order) : max),
+          -1
+        );
+        const nextOrder = maxOrder + 1;
+
         const newComicRef = await addDoc(collection(db, 'Comics'), {
           title: newComicTitle,
           author: newComicAuthor,
           thumbnailUrl: thumbnailUrl,
+          order: nextOrder,
+          createdAt: new Date(),
         });
         comicId = newComicRef.id;
       }
@@ -207,6 +216,7 @@ export default function AdminUploadPage() {
       setEpisodeTitle('');
       setImageFiles([]);
       setIsNewComic(false);
+      await fetchComics();
       
     } catch (error) {
       console.error("업로드 실패:", error);
